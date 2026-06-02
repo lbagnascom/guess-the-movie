@@ -1,21 +1,57 @@
-import { Button } from "@/components/ui/button"
+import { useQuery } from "@tanstack/react-query"
+import { useGame } from "@/hooks/useGame"
+import { StartScreen } from "@/components/StartScreen"
+import { GameScreen } from "@/components/GameScreen"
+import { ResultScreen } from "@/components/ResultScreen"
+import { MoviesSchema, type TryResult } from "@/types/game"
 
-export function App() {
+function useMovies() {
+  return useQuery({
+    queryKey: ["movies"],
+    queryFn: () =>
+      import("@/data/movies.json").then((m) => MoviesSchema.parse(m.default)),
+    staleTime: Infinity,
+  })
+}
+
+export default function App() {
+  const { data: movies = [], isLoading } = useMovies()
+  const {
+    phase,
+    movie,
+    currentReview,
+    reviewNumber,
+    totalReviews,
+    tryResults,
+    startGame,
+    submitGuess,
+    skip,
+    reset,
+  } = useGame()
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
+    <div className="flex min-h-svh items-center justify-center p-6">
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      ) : phase === "start" ? (
+        <StartScreen onPlay={() => startGame(movies)} />
+      ) : phase === "playing" && currentReview ? (
+        <GameScreen
+          review={currentReview}
+          reviewNumber={reviewNumber}
+          totalReviews={totalReviews}
+          tryResults={tryResults as TryResult[]}
+          onSubmit={submitGuess}
+          onSkip={skip}
+        />
+      ) : (phase === "won" || phase === "lost") && movie ? (
+        <ResultScreen
+          movie={movie}
+          won={phase === "won"}
+          reviewNumber={reviewNumber}
+          onPlayAgain={reset}
+        />
+      ) : null}
     </div>
   )
 }
-
-export default App
