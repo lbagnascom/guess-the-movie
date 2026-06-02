@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
+
 # Devenv
 .devenv*
 devenv.local.nix
@@ -34,3 +35,10 @@ devenv.local.yaml
 # Node
 node_modules/
 .pnpm-store/
+
+# Generated data
+src/data/movies.json
+
+# Python
+__pycache__/
+*.pyc
